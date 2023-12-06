@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use bevy::render::view::window;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
+
 
 pub const PLAYER_SIZE: f32 = 64.0;
 pub const PLAYER_SPEED: f32 = 500.0;
@@ -9,11 +9,14 @@ pub const NUMBER_OF_ENEMIES: usize = 4;
 pub const ENEMY_SIZE: f32 = 64.0;
 pub const ENEMY_SPEED: f32 = 200.0;
 
+//when making further: make this more abstract
+//example: make confine handle all the collision or maybe write collision script
+
 fn main() {
     App::new()
     .add_plugins(DefaultPlugins)
     .add_systems(Startup, (spawn_camera, spawn_player, spawn_enemies))
-    .add_systems(Update, (player_movement, confine_player_movement, enemy_movement))
+    .add_systems(Update, (player_movement, confine_player_movement, enemy_movement, update_enemy_direction, confine_enemy_movement, enemy_hit_player).chain())
     .run();
 }
 
@@ -132,12 +135,78 @@ pub fn confine_player_movement(mut player_query: Query<&mut Transform, With<Play
     }
 }
 
-pub fn update_enemy_direction(enemy_query: Query<(&Transform, &mut Enemy)>, window_query: Query<&Window, With<PrimaryWindow>>){
-        let window = window_query.get_single().unwrap();
-        
-        let half_enemy_size = ENEMY_SIZE / 2.0;
-        let x_min = 0.0 + half_enemy_size;
-        let x_max = window.width() - half_enemy_size;
-        let y_min = 0.0 + half_enemy_size;
-        let y_max = window.height() - half_enemy_size;
+pub fn update_enemy_direction(
+    mut enemy_query: Query<(&Transform, &mut Enemy)>, 
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    let window = window_query.get_single().unwrap();
+    
+    let half_enemy_size = ENEMY_SIZE / 2.0;
+    let x_min = 0.0 + half_enemy_size;
+    let x_max = window.width() - half_enemy_size;
+    let y_min = 0.0 + half_enemy_size;
+    let y_max = window.height() - half_enemy_size;
+
+    for (transform, mut enemy) in enemy_query.iter_mut(){
+        let translation = transform.translation;
+        let mut _changed_direction: bool = false; 
+
+        if translation.x < x_min || translation.x > x_max {
+            enemy.direction.x *= -1.0;
+            _changed_direction = true;
+        }
+        if translation.y < y_min || translation.y > y_max {
+            enemy.direction.y *= -1.0;
+            _changed_direction = true;
+        }
+    }
+}
+
+pub fn confine_enemy_movement(mut enemy_query: Query<&mut Transform, With<Enemy>>, window_query: Query<&Window, With<PrimaryWindow>>){
+    let window = window_query.get_single().unwrap();
+
+    let half_enemy_size = ENEMY_SIZE / 2.0;
+    let x_min = 0.0 + half_enemy_size;
+    let x_max = window.width() - half_enemy_size;
+    let y_min = 0.0 + half_enemy_size;
+    let y_max = window.height() - half_enemy_size;
+
+    for mut transform in enemy_query.iter_mut(){
+        let mut translation = transform.translation;
+
+        if translation.x < x_min{
+            translation.x = x_min;
+        }
+        if translation.x > x_max{
+            translation.x = x_max;
+        }
+
+        if translation.y < y_min{
+            translation.y = y_min;
+        }
+        if translation.y > y_max{
+            translation.y = y_max;
+        }
+
+        transform.translation = translation;
+    }
+}
+
+pub fn enemy_hit_player(
+    mut commands: Commands,
+    mut player_query: Query<(Entity, &Transform), With<Player>>,
+    enemy_query: Query<&Transform, With<Enemy>>
+){
+    if let Ok((player_entity, player_transform)) = player_query.get_single_mut(){
+        for enemy_transform in enemy_query.iter(){
+            let distance = player_transform.translation.distance(enemy_transform.translation);
+            let player_radius = PLAYER_SIZE / 2.0;
+            let enemy_radius = ENEMY_SIZE / 2.0;
+
+            if distance < player_radius + enemy_radius{
+                println!("Enemy hit player!");
+                commands.entity(player_entity).despawn();
+            }
+        }
+    }
 }
