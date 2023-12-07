@@ -5,9 +5,12 @@ use rand::prelude::*;
 
 pub const PLAYER_SIZE: f32 = 64.0;
 pub const PLAYER_SPEED: f32 = 500.0;
-pub const NUMBER_OF_ENEMIES: usize = 4;
+
+pub const NUMBER_OF_ENEMIES: usize = 0;
 pub const ENEMY_SIZE: f32 = 64.0;
 pub const ENEMY_SPEED: f32 = 200.0;
+pub const ENEMY_SPAWN_TIME:f32 = 0.01;
+
 pub const NUMBER_OF_STARS: usize = 10;
 pub const STAR_SIZE: f32 = 30.0;
 pub const STAR_SPAWN_TIME: f32 = 1.0;
@@ -20,6 +23,8 @@ fn main() {
     .add_plugins(DefaultPlugins)
     .init_resource::<Score>()
     .init_resource::<StarSpawnTimer>()
+    .init_resource::<EnemySpawnTimer>()
+    .init_resource::<AantalBeers>()
     .add_systems(Startup, (spawn_camera, spawn_player, spawn_enemies, spawn_stars))
     .add_systems(Update, (
         player_movement, 
@@ -31,7 +36,9 @@ fn main() {
         player_hit_star,
         update_score,
         tick_star_spawn_timer,
-        spawn_stars_over_time
+        tick_enemy_spawn_timer,
+        spawn_stars_over_time,
+        spawn_enemies_over_time
         )
         .chain())
     .run();
@@ -62,6 +69,19 @@ impl Default for Score {
 }
 
 #[derive(Resource)]
+pub struct AantalBeers{
+    pub value:u32
+}
+
+impl Default for AantalBeers {
+    fn default() -> Self {
+        AantalBeers { 
+            value: 0 
+        }
+    }
+}
+
+#[derive(Resource)]
 pub struct StarSpawnTimer{
     pub timer: Timer
 }
@@ -69,11 +89,23 @@ pub struct StarSpawnTimer{
 impl Default for StarSpawnTimer{
     fn default() -> Self {
         StarSpawnTimer { 
-            timer:  Timer::from_seconds(STAR_SPAWN_TIME, TimerMode::Repeating)
+            timer: Timer::from_seconds(STAR_SPAWN_TIME, TimerMode::Repeating)
         }
     }
 }
 
+#[derive(Resource)]
+pub struct EnemySpawnTimer{
+    pub timer: Timer
+}
+
+impl Default for EnemySpawnTimer {
+    fn default() -> Self {
+        EnemySpawnTimer{
+            timer: Timer::from_seconds(ENEMY_SPAWN_TIME, TimerMode::Repeating)
+        }
+    }
+}
 
 pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>){
     let window = window_query.get_single().unwrap();
@@ -310,6 +342,10 @@ pub fn tick_star_spawn_timer(mut star_spawn_timer: ResMut<StarSpawnTimer>, time:
     star_spawn_timer.timer.tick(time.delta());
 }
 
+pub fn tick_enemy_spawn_timer(mut enemy_spawn_timer: ResMut<EnemySpawnTimer>, time: Res<Time>){
+    enemy_spawn_timer.timer.tick(time.delta());
+}
+
 pub fn spawn_stars_over_time(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -330,6 +366,36 @@ pub fn spawn_stars_over_time(
                     ..default()
                 },
                 Star{
+                },
+            )
+        );
+    }
+}
+
+pub fn spawn_enemies_over_time(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
+    enemy_spawn_timer: Res<EnemySpawnTimer>,
+    mut aantal_beers: ResMut<AantalBeers>
+){
+    if enemy_spawn_timer.timer.finished(){ 
+        let window = window_query.get_single().unwrap();
+
+        let random_x = random::<f32>() * window.width();
+        let random_y = random::<f32>() * window.height();
+
+        aantal_beers.value += 1;
+
+        commands.spawn(
+            (
+                SpriteBundle{
+                    transform: Transform::from_xyz(random_x, random_y, 0.0),
+                    texture: asset_server.load("sprites/ball_red_large.png"),
+                    ..default()
+                },
+                Enemy{
+                    direction: Vec2::new(random::<f32>(), random::<f32>()).normalize(),
                 },
             )
         );
