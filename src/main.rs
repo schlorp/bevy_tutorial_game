@@ -6,10 +6,10 @@ use rand::prelude::*;
 pub const PLAYER_SIZE: f32 = 64.0;
 pub const PLAYER_SPEED: f32 = 500.0;
 
-pub const NUMBER_OF_ENEMIES: usize = 0;
+pub const NUMBER_OF_ENEMIES: usize = 4;
 pub const ENEMY_SIZE: f32 = 64.0;
 pub const ENEMY_SPEED: f32 = 200.0;
-pub const ENEMY_SPAWN_TIME:f32 = 0.01;
+pub const ENEMY_SPAWN_TIME:f32 = 5.0;
 
 pub const NUMBER_OF_STARS: usize = 10;
 pub const STAR_SIZE: f32 = 30.0;
@@ -24,7 +24,7 @@ fn main() {
     .init_resource::<Score>()
     .init_resource::<StarSpawnTimer>()
     .init_resource::<EnemySpawnTimer>()
-    .init_resource::<AantalBeers>()
+    .init_resource::<EnemyAmount>()
     .add_systems(Startup, (spawn_camera, spawn_player, spawn_enemies, spawn_stars))
     .add_systems(Update, (
         player_movement, 
@@ -35,6 +35,7 @@ fn main() {
         enemy_hit_player, 
         player_hit_star,
         update_score,
+        update_enemy_amount,
         tick_star_spawn_timer,
         tick_enemy_spawn_timer,
         spawn_stars_over_time,
@@ -69,13 +70,13 @@ impl Default for Score {
 }
 
 #[derive(Resource)]
-pub struct AantalBeers{
+pub struct EnemyAmount{
     pub value:u32
 }
 
-impl Default for AantalBeers {
+impl Default for EnemyAmount {
     fn default() -> Self {
-        AantalBeers { 
+        EnemyAmount { 
             value: 0 
         }
     }
@@ -338,6 +339,12 @@ pub fn update_score(score: Res<Score>){
     }
 }
 
+pub fn update_enemy_amount(enemy_amount: Res<EnemyAmount>){
+    if enemy_amount.is_changed(){
+        println!("Amount of enemies in world: {}", enemy_amount.value.to_string());
+    }
+}
+
 pub fn tick_star_spawn_timer(mut star_spawn_timer: ResMut<StarSpawnTimer>, time: Res<Time>){
     star_spawn_timer.timer.tick(time.delta());
 }
@@ -377,7 +384,7 @@ pub fn spawn_enemies_over_time(
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
     enemy_spawn_timer: Res<EnemySpawnTimer>,
-    mut aantal_beers: ResMut<AantalBeers>
+    mut enemy_amount: ResMut<EnemyAmount>
 ){
     if enemy_spawn_timer.timer.finished(){ 
         let window = window_query.get_single().unwrap();
@@ -385,7 +392,7 @@ pub fn spawn_enemies_over_time(
         let random_x = random::<f32>() * window.width();
         let random_y = random::<f32>() * window.height();
 
-        aantal_beers.value += 1;
+        enemy_amount.value += 1;
 
         commands.spawn(
             (
