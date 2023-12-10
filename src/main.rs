@@ -1,3 +1,4 @@
+use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
@@ -25,6 +26,7 @@ fn main() {
     .init_resource::<StarSpawnTimer>()
     .init_resource::<EnemySpawnTimer>()
     .init_resource::<EnemyAmount>()
+    .add_event::<GameOver>()
     .add_systems(Startup, (spawn_camera, spawn_player, spawn_enemies, spawn_stars))
     .add_systems(Update, (
         player_movement, 
@@ -39,7 +41,9 @@ fn main() {
         tick_star_spawn_timer,
         tick_enemy_spawn_timer,
         spawn_stars_over_time,
-        spawn_enemies_over_time
+        spawn_enemies_over_time,
+        exit_game,
+        handle_game_over
         )
         .chain())
     .run();
@@ -106,6 +110,11 @@ impl Default for EnemySpawnTimer {
             timer: Timer::from_seconds(ENEMY_SPAWN_TIME, TimerMode::Repeating)
         }
     }
+}
+
+#[derive(Event)]
+pub struct GameOver{
+    pub score: u32
 }
 
 pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>){
@@ -207,7 +216,10 @@ pub fn enemy_movement(mut enemy_query: Query<(&mut Transform, &Enemy)>, time: Re
     }
 }
 
-pub fn confine_player_movement(mut player_query: Query<&mut Transform, With<Player>>, window_query: Query<&Window, With<PrimaryWindow>>){
+pub fn confine_player_movement(
+    mut player_query: Query<&mut Transform, With<Player>>, 
+    window_query: Query<&Window, With<PrimaryWindow>>
+){
     if let Ok(mut player_transform) = player_query.get_single_mut(){
         let window = window_query.get_single().unwrap();
 
@@ -263,7 +275,10 @@ pub fn update_enemy_direction(
     }
 }
 
-pub fn confine_enemy_movement(mut enemy_query: Query<&mut Transform, With<Enemy>>, window_query: Query<&Window, With<PrimaryWindow>>){
+pub fn confine_enemy_movement(
+    mut enemy_query: Query<&mut Transform, With<Enemy>>, 
+    window_query: Query<&Window, With<PrimaryWindow>>
+){
     let window = window_query.get_single().unwrap();
 
     let half_enemy_size = ENEMY_SIZE / 2.0;
@@ -295,8 +310,10 @@ pub fn confine_enemy_movement(mut enemy_query: Query<&mut Transform, With<Enemy>
 
 pub fn enemy_hit_player(
     mut commands: Commands,
+    mut game_over_event_writer: EventWriter<GameOver>,
     mut player_query: Query<(Entity, &Transform), With<Player>>,
-    enemy_query: Query<&Transform, With<Enemy>>
+    enemy_query: Query<&Transform, With<Enemy>>,
+    score: Res<Score>
 ){
     if let Ok((player_entity, player_transform)) = player_query.get_single_mut(){
         for enemy_transform in enemy_query.iter(){
@@ -305,8 +322,8 @@ pub fn enemy_hit_player(
             let enemy_radius = ENEMY_SIZE / 2.0;
 
             if distance < player_radius + enemy_radius{
-                println!("Enemy hit player!");
                 commands.entity(player_entity).despawn();
+                game_over_event_writer.send(GameOver{score: score.value});
             }
         }
     }
@@ -326,7 +343,6 @@ pub fn player_hit_star(
 
             if distance < player_radius + star_radius {
                 score.value += 1;
-                println!("Player hit Star!!!");
                 commands.entity(star_entity).despawn();
             }
         }
@@ -406,5 +422,20 @@ pub fn spawn_enemies_over_time(
                 },
             )
         );
+    }
+}
+
+pub fn exit_game(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut app_exit_event_writer: EventWriter<AppExit>
+){
+    if keyboard_input.just_pressed(KeyCode::Escape){
+        app_exit_event_writer.send(AppExit);
+    }
+}
+
+pub fn handle_game_over(mut game_over_event_reader: EventReader<GameOver>){
+    for event in game_over_event_reader.read(){
+        println!("Game Over!!! Score: {}", event.score);
     }
 }
