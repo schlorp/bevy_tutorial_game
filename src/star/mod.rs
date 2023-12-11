@@ -20,6 +20,6 @@ impl Plugin for StarPlugin{
         .add_systems(Update, (
             tick_star_spawn_timer,
             spawn_stars_over_time,
-        ).chain());
+        ));
     }
 }

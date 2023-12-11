@@ -19,6 +19,6 @@ impl Plugin for ScorePlugin {
             update_enemy_amount,
             update_high_scores,
             high_scores_updated
-        ).chain());
+        ));
     }
 }

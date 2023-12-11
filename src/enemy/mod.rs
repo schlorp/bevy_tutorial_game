@@ -22,8 +22,10 @@ impl Plugin for EnemyPlugin{
             enemy_movement,
             update_enemy_direction,
             confine_enemy_movement, 
+        ).chain())
+        .add_systems(Update, (
             tick_enemy_spawn_timer,
             spawn_enemies_over_time,
-        ).chain());
+        ));
     }
 }

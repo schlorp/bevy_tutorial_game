@@ -15,6 +15,7 @@ use score::ScorePlugin;
 use star::StarPlugin;
 
 use bevy::prelude::*;
+//only chain what is needed to safe performance, dont chain everything
 
 fn main() {
     App::new()
