@@ -1,8 +1,11 @@
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
+use rand::prelude::*;
 
-pub const NUMBER_OF_ENEMIES: usize = 4;
-pub const ENEMY_SIZE: f32 = 64.0;
-pub const ENEMY_SPEED: f32 = 200.0;
+use super::components::*;
+use super::resources::*;
+use super::{NUMBER_OF_ENEMIES, ENEMY_SPEED, ENEMY_SIZE};
+use crate::score::resources::EnemyAmount;
 
 pub fn spawn_enemies(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>){
     let window = window_query.get_single().unwrap();

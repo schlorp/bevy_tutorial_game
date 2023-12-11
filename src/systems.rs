@@ -1,14 +1,8 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use rand::prelude::*;
 use bevy::app::AppExit;
 
-use crate::components::*;
-use crate::resources::*;
 use crate::events::*;
-
-pub const NUMBER_OF_STARS: usize = 10;
-pub const STAR_SIZE: f32 = 30.0;
 
 pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>){
     let window = window_query.get_single().unwrap();
