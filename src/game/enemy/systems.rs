@@ -5,7 +5,6 @@ use rand::prelude::*;
 use super::components::*;
 use super::resources::*;
 use super::{NUMBER_OF_ENEMIES, ENEMY_SPEED, ENEMY_SIZE};
-use crate::score::resources::EnemyAmount;
 
 pub fn spawn_enemies(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>, asset_server: Res<AssetServer>){
     let window = window_query.get_single().unwrap();
@@ -26,6 +25,15 @@ pub fn spawn_enemies(mut commands: Commands, window_query: Query<&Window, With<P
                 },
             )
         );
+    }
+}
+
+pub fn despawn_enemies(
+    mut commands: Commands,
+    enemy_query: Query<Entity, With<Enemy>>
+){
+    for enemy_entity in enemy_query.iter(){
+        commands.entity(enemy_entity).despawn();
     }
 }
 
@@ -105,15 +113,12 @@ pub fn spawn_enemies_over_time(
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
     enemy_spawn_timer: Res<EnemySpawnTimer>,
-    mut enemy_amount: ResMut<EnemyAmount>
 ){
     if enemy_spawn_timer.timer.finished(){ 
         let window = window_query.get_single().unwrap();
 
         let random_x = random::<f32>() * window.width();
         let random_y = random::<f32>() * window.height();
-
-        enemy_amount.value += 1;
 
         commands.spawn(
             (

@@ -26,6 +26,15 @@ pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<Pr
     ));
 }
 
+pub fn despawn_player(
+    mut commands: Commands,
+    player_query: Query<Entity, With<Player>>
+){
+    if let Ok(player_entity) = player_query.get_single(){
+        commands.entity(player_entity).despawn();
+    }
+}
+
 pub fn player_movement(keyboard_input: Res<Input<KeyCode>>, mut player_query: Query<&mut Transform, With<Player>>, time: Res<Time>){
     if let Ok(mut transform) = player_query.get_single_mut(){
         let mut direction = Vec3::ZERO;

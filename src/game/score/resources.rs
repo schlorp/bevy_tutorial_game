@@ -25,16 +25,3 @@ impl Default for HighScores {
         }
     }
 }
-
-#[derive(Resource)]
-pub struct EnemyAmount{
-    pub value:u32
-}
-
-impl Default for EnemyAmount {
-    fn default() -> Self {
-        EnemyAmount { 
-            value: 4 
-        }
-    }
-}

@@ -13,6 +13,7 @@ use star::StarPlugin;
 use systems::*;
 
 use crate::events::GameOver;
+use crate::AppState;
 
 pub struct GamePlugin;
 
@@ -21,11 +22,12 @@ impl Plugin for GamePlugin{
         app
         .add_state::<SimulationState>()
         .add_event::<GameOver>()
-        .add_plugins((PlayerPlugin, EnemyPlugin, ScorePlugin, StarPlugin));
+        .add_plugins((PlayerPlugin, EnemyPlugin, ScorePlugin, StarPlugin))
+        .add_systems(Update, toggle_simulation.run_if(in_state(AppState::GAME)));
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default, States)]
+#[derive(Default, Debug, Clone, States, Hash, PartialEq, Eq)]
 pub enum SimulationState{
     #[default]
     PAUSED,

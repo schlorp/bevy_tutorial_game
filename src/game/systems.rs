@@ -8,12 +8,14 @@ pub fn toggle_simulation(
     simulation_state: Res<State<SimulationState>>,
 ){
     if keyboard_input.just_pressed(KeyCode::Space){
-        match simulation_state {
+        match simulation_state.get() {
             SimulationState::PAUSED => {
-                
+                println!("Was paused");
+                commands.insert_resource(NextState(Some(SimulationState::RUNNING)));
             }
             SimulationState::RUNNING => {
-
+                println!("Was Running");
+                commands.insert_resource(NextState(Some(SimulationState::PAUSED)));
             }
         }
     }
