@@ -8,7 +8,7 @@ pub fn toggle_simulation(
     simulation_state: Res<State<SimulationState>>,
 ){
     if keyboard_input.just_pressed(KeyCode::Space){
-        match simulation_state.current() {
+        match simulation_state {
             SimulationState::PAUSED => {
                 
             }
