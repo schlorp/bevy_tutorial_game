@@ -19,7 +19,7 @@ pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<Pr
     commands.spawn((
         SpriteBundle{
             transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
-            texture: asset_server.load("sprites/ball_blue_large.png"),
+            texture: asset_server.load("sprites/SpaRood.png"),
             ..default()
         },
         Player{},
