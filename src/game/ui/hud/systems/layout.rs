@@ -21,21 +21,84 @@ pub fn build_hud(
         (
             NodeBundle{
                 style: Style{
-                    flex_direction: FlexDirection::Column,
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Row,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     width: Val::Percent(100.0),
                     height: Val::Percent(10.0),
                     ..default()
                 },
-                background_color: Color::rgba(0.0, 0.0, 255.0, 0.15).into(),
                 ..default()
             },
             Hud {},
         )
     )
     .with_children(|parent|{
-        
+        //=== star counter ===
+        parent.spawn
+        (
+            NodeBundle{
+                style: Style{
+                    flex_direction: FlexDirection::Row,
+                    justify_content: JustifyContent::FlexStart,
+                    width: Val::Percent(30.0),
+                    height: Val::Percent(90.0),
+                    ..default()
+                },
+                background_color: Color::rgba(157.0, 157.0, 157.0, 0.5).into(),
+                ..default()
+            }
+        )
+        .with_children(|parent|{
+            //=== image ===
+            parent.spawn
+            (
+                ImageBundle{
+                    style: Style{
+                        width: Val::Auto,
+                        height: Val::Auto,
+                        margin: UiRect::new(
+                            Val::Px(8.0), 
+                            Val::Px(8.0), 
+                            Val::Px(8.0), 
+                            Val::Px(8.0)
+                        ),
+                        ..default()
+                    },
+                    image: asset_server.load("sprites/Star.png").into(),
+                    ..default()
+                }
+            );
+
+
+            //=== score text
+            parent.spawn
+            (
+                TextBundle{
+                    text: Text{
+                        sections: vec![
+                            TextSection::new(
+                                "Score", 
+                                TextStyle{
+                                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                    font_size: 64.0,
+                                    color: Color::WHITE,
+                                }
+                            )
+                        ],
+                        alignment: TextAlignment::Center,
+                        ..default()
+                    },
+                    style: Style{
+                        justify_content: JustifyContent::Center,
+                        align_self: AlignSelf::Center,
+                        ..default()
+                    },
+                    ..default()
+                }
+            );
+        });
     }).id();
 
     return hud_entity;
