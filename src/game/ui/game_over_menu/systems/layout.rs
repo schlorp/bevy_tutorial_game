@@ -39,6 +39,7 @@ pub fn build_game_over_menu(
         GameOverMenu{}
     ))
 
+
         //=== game over menu container ===
         .with_children(|parent|{
             parent.spawn
@@ -58,6 +59,8 @@ pub fn build_game_over_menu(
                 }
             )
                 .with_children(|parent|{
+
+
                     //=== Game Over Title ===
                     parent.spawn
                     (
@@ -96,7 +99,8 @@ pub fn build_game_over_menu(
                                 }
                             );
                         });
-                    
+
+
                     //=== score text ===
                     parent.spawn
                             (
@@ -118,8 +122,126 @@ pub fn build_game_over_menu(
                                     ..default()
                                 }
                             );
-                    
+
+
+                    //=== Restart Button ===
+                    parent.spawn
+                    ((
+                        ButtonBundle{
+                            style: Style{
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                width: Val::Px(300.0),
+                                height: Val::Px(60.0),
+                                ..default()
+                            },
+                            background_color: Color::BLACK.into(),
+                            ..default()
+                        },
+                        RestartButton {},
+                    ))
+                        .with_children(|parent|{
+                            parent.spawn
+                            (
+                                TextBundle{
+                                    text: Text{
+                                        sections: vec![
+                                            TextSection::new(
+                                                "Restart", 
+                                                TextStyle{
+                                                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                                    font_size: 64.0,
+                                                    color: Color::WHITE,
+                                                }
+                                            )
+                                        ],
+                                        alignment: TextAlignment::Center,
+                                        ..default()
+                                    },
+                                    ..default()
+                                }
+                            );
+                        });
                 });
+
+
+                    //=== main menu button
+                    parent.spawn
+                        ((
+                            ButtonBundle{
+                                style: Style{
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    width: Val::Px(300.0),
+                                    height: Val::Px(60.0),
+                                    ..default()
+                                },
+                                background_color: Color::BLACK.into(),
+                                ..default()
+                            },
+                            MainMenuButton {}
+                        ))
+                            .with_children(|parent|{
+                                parent.spawn
+                                (
+                                    TextBundle{
+                                        text: Text{
+                                            sections: vec![
+                                                TextSection::new(
+                                                    "Main Menu", 
+                                                    TextStyle{
+                                                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                                        font_size: 64.0,
+                                                        color: Color::WHITE,
+                                                    }
+                                                )
+                                            ],
+                                            alignment: TextAlignment::Center,
+                                            ..default()
+                                        },
+                                        ..default()
+                                    }
+                                );
+                            });
+
+                    //=== quit button ===
+                    parent.spawn
+                        ((
+                            ButtonBundle{
+                                style: Style{
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    width: Val::Px(300.0),
+                                    height: Val::Px(60.0),
+                                    ..default()
+                                },
+                                background_color: Color::BLACK.into(),
+                                ..default()
+                            },
+                            QuitButton {}
+                        ))
+                            .with_children(|parent|{
+                                parent.spawn
+                                (
+                                    TextBundle{
+                                        text: Text{
+                                            sections: vec![
+                                                TextSection::new(
+                                                    "Quit", 
+                                                    TextStyle{
+                                                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                                        font_size: 64.0,
+                                                        color: Color::WHITE,
+                                                    }
+                                                )
+                                            ],
+                                            alignment: TextAlignment::Center,
+                                            ..default()
+                                        },
+                                        ..default()
+                                    },
+                                );
+                            });
         })
     .id();
 
